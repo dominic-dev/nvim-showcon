@@ -14,14 +14,18 @@ class Main(object):
         current_word = word = self.nvim.eval('expand("<cword>")')
         buffer_ = self.nvim.current.buffer
         directory = self.nvim.eval('getcwd()')
+        directory = self.nvim.eval("expand('%:p:h')")
         extension = self.nvim.eval('expand("%:e")')
 
         class_name = extension.title() + 'Constructor'
-        constructor_handler = globals()[class_name](extension, directory,\
+        try:
+            constructor_handler = globals()[class_name](extension, directory,\
                                                     current_word, self.nvim)
-        constructors = constructor_handler.get_constructors()
-
-        message = " ## ".join(constructors)
+        except KeyError:
+            message = "{} ({})".format(Constructor.NOT_SUPPORTED, extension)
+        else:
+            constructors = constructor_handler.get_constructors()
+            message = " ## ".join(constructors)
         command = 'echom "{}"'.format(message)
         self.nvim.command(command)
 
@@ -30,6 +34,9 @@ class Main(object):
 
 
 class Constructor:
+    NOTHING_FOUND = "Nothing found."
+    NOT_SUPPORTED = "This filetype is currently not supported."
+
     def __init__(self, language, directory, name, nvim):
         self._language = language
         self._directory = directory
@@ -58,10 +65,9 @@ class JavaConstructor(Constructor):
         search_string = "{}/**/{}.{}".format(self._directory, self._name,\
                                              self._language)
         result = glob.glob(search_string, recursive=True)
-        file_ = None
         if(len(result) == 1):
             file_ = result[0]
-        if(len(result) > 1):
+        elif(len(result) > 1):
             choices = "\n&".join(["{}. {}".format(i+1, r) for i, r in enumerate(result)])
             self._nvim.command('call inputsave()')
             command = "let user_input = confirm('Choose a source', '&{}', 1)".format(choices)
@@ -70,7 +76,8 @@ class JavaConstructor(Constructor):
             answer = self._nvim.eval('user_input')
             file_ = result[answer-1]
             self._nvim.command("echom '{}'".format(answer))
-
+        else:
+            file_ = None
         return file_
 
     def get_constructors(self):
@@ -80,12 +87,12 @@ class JavaConstructor(Constructor):
 
         file_ = self._get_constructor_file();
         if (not file_):
-            return
+            return [Constructor.NOTHING_FOUND]
 
         with open(file_) as f:
-            for l in f.readlines():
-                if (prog.match(l)):
-                    # append stripped
-                    constructors.append(l.strip()[6:l.find("\{")])
+            for line in f.readlines():
+                if (prog.match(line)):
+                    # append stripped line
+                    constructors.append(line.strip()[7:line.find("\{")])
         return constructors
 
