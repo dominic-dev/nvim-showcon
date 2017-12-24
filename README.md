@@ -22,11 +22,10 @@ This plugin code works with Python 3.
 pip3 install neovim
 ```
 
-### Mapping 
-
-Add this to your ~/.config/nvim/init.vim file
-Replace ```<Leader\>s``` with your desired mapping
+### Usage 
+Use the following command
 
 ```VimL
-nnoremap <silent> <Leader>s :exe "call ShowConstructor()"<CR>
+:ShowConstructor
 ```
+or map it to your favorite shortkeys
