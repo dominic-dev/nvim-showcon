@@ -11,18 +11,19 @@ class Main(object):
 
     @neovim.function('ShowConstructor')
     def showConstructor(self, args):
-        current_word = word = self.nvim.eval('expand("<cword>")')
-        buffer_ = self.nvim.current.buffer
-        directory = self.nvim.eval('getcwd()')
+        word_under_cursor = word = self.nvim.eval('expand("<cword>")')
         directory = self.nvim.eval("expand('%:p:h')")
         extension = self.nvim.eval('expand("%:e")')
 
         class_name = extension.title() + 'Constructor'
+        # Find implemented constructor_handler
         try:
             constructor_handler = globals()[class_name](extension, directory,\
-                                                    current_word, self.nvim)
+                                                    word_under_cursor, self.nvim)
+        # Filetype not implemented
         except KeyError:
             message = "{} ({})".format(Constructor.NOT_SUPPORTED, extension)
+        # Implemented cunstructor_handler found
         else:
             constructors = constructor_handler.get_constructors()
             message = " ## ".join(constructors)
@@ -44,7 +45,9 @@ class Constructor:
         self._nvim = nvim
 
     """
-    Return list of constructors
+    Return list of constructors, implement this for each filetype.
+    The extending class' name implementing this must start with the
+    filetype followed by Constructor in CamelCase.
     """
     @abc.abstractmethod
     def get_constructors(self):
@@ -52,7 +55,7 @@ class Constructor:
 
 class JavaConstructor(Constructor):
     """
-    Return java constructors
+    Java implementation.
     """
     def __init__(self, language, directory, name, nvim):
         super().__init__(language, directory, name, nvim)
