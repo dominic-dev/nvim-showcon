@@ -7,12 +7,12 @@ Thanks to /jacobsimpson/nvim-example-python-plugin for the neovim plugin templat
 
 Using <a href="https://github.com/Shougo/dein.vim">dein</a>
 ```Bash
-    call dein#add('dominic-dev/show-constructor')
+    call dein#add('dominic-dev/nvim-showcon')
 ```
 
 Using NeoBundle
 ```Bash
-    NeoBundle 'dominic-dev/show-constructor'
+    NeoBundle 'dominic-dev/nvim-showcon'
 ```
 
 ### <a id="python_version"></a>Python Version
